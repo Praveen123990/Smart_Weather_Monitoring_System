@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Weather Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      margin: 0;
+      padding: 10px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 15px;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+    }
+    .value {
+      font-size: 28px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .status {
+      font-size: 20px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🌤 Smart Weather Dashboard</h1>
+
+<div class="grid">
+  <div class="card">
+    🌡 Temperature
+    <div class="value" id="temp">-- °C</div>
+  </div>
+
+  <div class="card">
+    💧 Humidity
+    <div class="value" id="hum">-- %</div>
+  </div>
+
+  <div class="card">
+    🔥 Gas Value
+    <div class="value" id="gas">--</div>
+    <div class="status" id="gasStatus">---</div>
+  </div>
+
+  <div class="card">
+    🌧 Rain Value
+    <div class="value" id="rain">--</div>
+    <div class="status" id="rainStatus">---</div>
+  </div>
+</div>
+
+<script>
+const channelID = "3220897";
+const readAPIKey = "24X4WNYJAMURTAFY";
+
+const url = `https://api.thingspeak.com/channels/${channelID}/feeds/last.json?api_key=${readAPIKey}`;
+
+function updateData() {
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      const temp = data.field1;
+      const hum = data.field2;
+      const gas = data.field3;
+      const rain = data.field4;
+      const rainStatusCode = data.field5;
+      const gasStatusCode = data.field6;
+
+      document.getElementById("temp").innerText = temp + " °C";
+      document.getElementById("hum").innerText = hum + " %";
+      document.getElementById("gas").innerText = gas;
+      document.getElementById("rain").innerText = rain;
+
+     // Rain Status
+if (rainStatusCode === 1) {
+  document.getElementById("rainStatus").innerText = "RAIN: YES";
+} else {
+  document.getElementById("rainStatus").innerText = "RAIN: NO";
+}
+
+      // Gas Status
+      let gasText = "---";
+      if (gasStatusCode == 1) gasText = "GOOD";
+      else if (gasStatusCode == 2) gasText = "MODERATE";
+      else if (gasStatusCode == 3) gasText = "BAD";
+
+      document.getElementById("gasStatus").innerText = gasText;
+    })
+    .catch(err => console.log(err));
+}
+
+// Update every 20 seconds
+updateData();
+setInterval(updateData, 20000);
+</script>
+
+</body>
+</html>
